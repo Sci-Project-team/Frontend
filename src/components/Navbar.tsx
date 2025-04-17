@@ -4,8 +4,8 @@ export default function Navbar() {
   const location = useLocation();
   
   return (
-    <div className="flex justify-start w-full">
-      <nav className="flex gap-4 px-6 py-3 bg-blue-300 rounded-full mx-auto">
+    <div className="flex justify-start mt-5 w-full">
+      <nav className="flex gap-4 px-6 py-3 bg-blue-600 rounded-full mx-auto">
         <Link 
           to="/" 
           className={`text-white hover:text-blue-100 ${location.pathname === '/' ? 'text-green-400 font-bold' : ''}`}

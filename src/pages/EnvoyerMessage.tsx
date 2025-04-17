@@ -29,46 +29,61 @@ function EnvoyerMessage() {
       return;
     }
 
-    // ✅ Envoi simulé
+    
     console.log("Numéro :", trimmedNumero);
     console.log("Message :", trimmedMessage);
     alert("Message envoyé avec succès !");
 
-    // Reset
+   
     setNumero("");
     setMessage("");
     setErreur("");
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "auto", textAlign: "left" }}>
-      <h2>Envoyer un message</h2>
+    <div className="flex justify-center mt-8 items-center p-6">
+      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Envoyer un message</h2>
 
-      <label>Numéro de téléphone :</label>
-      <input
-        type="text"
-        value={numero}
-        onChange={(e) => setNumero(e.target.value)}
-        placeholder="Ex: 0612345678"
-        style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-      />
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-semibold mb-2">
+            Numéro de téléphone
+          </label>
+          <input
+            type="text"
+            value={numero}
+            onChange={(e) => setNumero(e.target.value)}
+            placeholder="Ex: 0612345678"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-colors"
+          />
+        </div>
 
-      <label>Message :</label>
-      <textarea
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="Votre message ici..."
-        style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-        rows={4}
-      />
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-semibold mb-2">
+            Message
+          </label>
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Votre message ici..."
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-colors"
+          />
+        </div>
 
-      {erreur && (
-        <div style={{ color: "red", marginBottom: "10px" }}>{erreur}</div>
-      )}
+        {erreur && (
+          <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">
+            <p className="font-medium">{erreur}</p>
+          </div>
+        )}
 
-      <button onClick={handleEnvoyer} style={{ padding: "10px 20px" }}>
-        Envoyer
-      </button>
+        <button
+          onClick={handleEnvoyer}
+          className="w-full bg-blue-600 hover:bg-[#24c669] text-white font-bold py-3 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          Envoyer
+        </button>
+      </div>
     </div>
   );
 }
