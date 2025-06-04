@@ -1,4 +1,4 @@
-import { messagesRecu } from "../data/StaticMessages"; 
+import React, { useEffect, useState } from "react";
 
 type Message = {
   numero: string;
@@ -6,11 +6,7 @@ type Message = {
   date: string;
 };
 
-interface MessageRecuProps {
-  messages: Message[];
-}
-
-function MessageRecu({ messages }: MessageRecuProps) {
+function MessageRecu({ messages }: { messages: Message[] }) {
   return (
     <div className="flex justify-center items-center p-6">
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-2xl">
@@ -29,13 +25,24 @@ function MessageRecu({ messages }: MessageRecuProps) {
               >
                 <div className="flex justify-between items-center mb-3 text-sm">
                   <div className="font-medium text-blue-600 flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                    <svg
+                      className="w-4 h-4 mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                      ></path>
                     </svg>
                     {message.numero}
                   </div>
-                  <div className="text-gray-500">
-                    {new Date(message.date).toLocaleString()}
+                  <div className="text-gray-500 font-mono text-xs">
+                    {message.date}
                   </div>
                 </div>
                 <div className="text-gray-700 leading-relaxed bg-white p-3 rounded-md border border-gray-100">
@@ -51,7 +58,67 @@ function MessageRecu({ messages }: MessageRecuProps) {
 }
 
 function MessageRecuWrapper() {
-  return <MessageRecu messages={messagesRecu} />; 
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchMessages() {
+      try {
+        const response = await fetch("http://localhost:8000/sms/inbox?limit=50", {
+          headers: {
+            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJuaW5hIiwiZXhwIjoxNzQ5NjY3NDkxfQ.K_4XBMYBv_LVS4g7nMQYhV7QLLwpTeHEjdnFINPGyuE`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        console.log("API Response:", data);
+        if (data.length > 0) {
+          console.log("First message structure:", data[0]);
+        }
+
+        setMessages(
+          data.map((sms: any) => ({
+            numero: sms.phone_number,
+            texte: sms.message,
+            date: new Date(sms.created_at).toLocaleString('fr-FR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            }),
+          }))
+        );
+      } catch (err: any) {
+        console.error("Error fetching messages:", err);
+        setError(err.message || "Erreur inconnue");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMessages();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="text-center p-6 text-gray-500">Chargement des messages reçus...</div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-6 text-red-500">Erreur: {error}</div>
+    );
+  }
+
+  return <MessageRecu messages={messages} />;
 }
 
 export default MessageRecuWrapper;

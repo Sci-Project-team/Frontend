@@ -1,4 +1,4 @@
-import { messagesEnvoye } from "../data/StaticMessages"; 
+import { useEffect, useState } from "react";
 
 type Message = {
   numero: string;
@@ -6,16 +6,14 @@ type Message = {
   date: string;
 };
 
-interface HistoriqueProps {
-  messages: Message[];
-}
-
-function Historique({ messages }: HistoriqueProps) {
+function Historique({ messages }: { messages: Message[] }) {
   return (
     <div className="flex justify-center items-center p-6">
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-2xl">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Historique des Messages Envoyés</h2>
-        
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+          Historique des Messages Envoyés
+        </h2>
+
         {messages.length === 0 ? (
           <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
             Aucun message envoyé pour le moment
@@ -28,14 +26,25 @@ function Historique({ messages }: HistoriqueProps) {
                 className="bg-gray-50 border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow duration-200"
               >
                 <div className="flex justify-between items-center mb-3 text-sm">
-                  <div className="font-medium text-blue-600 flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                  <div className="font-medium text-green-600 flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                      ></path>
                     </svg>
                     {message.numero}
                   </div>
-                  <div className="text-gray-500">
-                    {new Date(message.date).toLocaleString()}
+                  <div className="text-gray-500 font-mono text-xs">
+                    {message.date}
                   </div>
                 </div>
                 <div className="text-gray-700 leading-relaxed bg-white p-3 rounded-md border border-gray-100">
@@ -50,8 +59,67 @@ function Historique({ messages }: HistoriqueProps) {
   );
 }
 
-function HistoriqueWrapper() {
-  return <Historique messages={messagesEnvoye} />;
-}
+export default function HistoriqueWrapper() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export default HistoriqueWrapper;
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/sms/sent", {
+          headers: {
+            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJuaW5hIiwiZXhwIjoxNzQ5NjY3NDkxfQ.K_4XBMYBv_LVS4g7nMQYhV7QLLwpTeHEjdnFINPGyuE`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        // Debug: Let's see what we're getting
+        console.log("Sent messages API Response:", data);
+        if (data.length > 0) {
+          console.log("First sent message structure:", data[0]);
+        }
+
+        const formatted: Message[] = data.map((sms: any) => ({
+          numero: sms.phone_number,
+          texte: sms.message,
+          date: new Date(sms.created_at).toLocaleString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+        }));
+
+        setMessages(formatted);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des logs :", error);
+        setError(error instanceof Error ? error.message : "Erreur inconnue");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLogs();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="text-center p-6 text-gray-500">Chargement des messages envoyés...</div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-6 text-red-500">Erreur: {error}</div>
+    );
+  }
+
+  return <Historique messages={messages} />;
+}
