@@ -4,10 +4,14 @@ function EnvoyerMessage() {
   const [numero, setNumero] = useState("");
   const [message, setMessage] = useState("");
   const [erreur, setErreur] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleEnvoyer = () => {
+  const handleEnvoyer = async () => {
     const trimmedNumero = numero.trim();
     const trimmedMessage = message.trim();
+
+    setErreur("");
+    setSuccess("");
 
     if (!/^\d+$/.test(trimmedNumero)) {
       setErreur("Le numéro ne doit contenir que des chiffres.");
@@ -29,21 +33,45 @@ function EnvoyerMessage() {
       return;
     }
 
-    
-    console.log("Numéro :", trimmedNumero);
-    console.log("Message :", trimmedMessage);
-    alert("Message envoyé avec succès !");
+    try {
+     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJuaW5hIiwiZXhwIjoxNzQ5NjY3NDkxfQ.K_4XBMYBv_LVS4g7nMQYhV7QLLwpTeHEjdnFINPGyuE";
 
-   
-    setNumero("");
-    setMessage("");
-    setErreur("");
+const response = await fetch("http://localhost:8000/sms", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`, 
+  },
+  body: JSON.stringify({
+    phone_number: "+213" + trimmedNumero.slice(1),
+    message: trimmedMessage,
+  }),
+});
+
+      if (!response.ok) {
+        const error = await response.json();
+        setErreur(error.detail || "Une erreur s'est produite lors de l'envoi.");
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Réponse API:", data);
+      setSuccess("Message envoyé avec succès !");
+      setNumero("");
+      setMessage("");
+    } catch (err) {
+      setErreur("Erreur réseau ou serveur.");
+      console.error(err);
+    }
   };
 
   return (
     <div className="flex justify-center mt-8 items-center p-6">
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Envoyer un message</h2>
+
+        {erreur && <p className="text-red-500 mb-4">{erreur}</p>}
+        {success && <p className="text-green-500 mb-4">{success}</p>}
 
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-semibold mb-2">
@@ -71,15 +99,9 @@ function EnvoyerMessage() {
           />
         </div>
 
-        {erreur && (
-          <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">
-            <p className="font-medium">{erreur}</p>
-          </div>
-        )}
-
         <button
           onClick={handleEnvoyer}
-          className="w-full bg-blue-600 hover:bg-[#24c669] text-white font-bold py-3 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
         >
           Envoyer
         </button>
