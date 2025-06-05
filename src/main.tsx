@@ -13,7 +13,6 @@ if (!rootElement) {
 }
 
 ReactDOM.createRoot(rootElement).render(
-  <React.StrictMode>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
@@ -23,5 +22,4 @@ ReactDOM.createRoot(rootElement).render(
         </Route>
       </Routes>
     </BrowserRouter>
-  </React.StrictMode>
 );
