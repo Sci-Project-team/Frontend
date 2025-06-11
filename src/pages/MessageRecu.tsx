@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 
 type Message = {
+  index?: number;
   numero: string;
   texte: string;
   date: string;
+  status?: string;
   type: string; // 'read' or 'unread'
 };
 
@@ -14,14 +16,20 @@ interface MessageRecuProps {
 }
 
 function MessageRecu({ messages, onRefresh, loading }: MessageRecuProps) {
-  const formatDate = (timestamp: string) => {
-    // Convert ESP32 timestamp (milliseconds since boot) to readable format
-    const seconds = parseInt(timestamp) / 1000;
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "Date inconnue";
     
-    return `${hours}h ${minutes}m ${secs}s (depuis le démarrage)`;
+    // If it looks like an ESP32 timestamp (just numbers), convert it
+    if (/^\d+$/.test(dateStr)) {
+      const seconds = parseInt(dateStr) / 1000;
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${hours}h ${minutes}m ${secs}s (depuis le démarrage)`;
+    }
+    
+    // Otherwise, return the date as-is (already formatted by ESP32)
+    return dateStr;
   };
 
   const unreadCount = messages.filter(msg => msg.type === 'unread').length;
@@ -76,7 +84,7 @@ function MessageRecu({ messages, onRefresh, loading }: MessageRecuProps) {
           <div className="space-y-4">
             {messages.map((message, index) => (
               <div
-                key={index}
+                key={message.index || index}
                 className={`border rounded-lg shadow-sm p-4 hover:shadow-md transition-all duration-200 ${
                   message.type === 'unread' 
                     ? 'bg-red-50 border-red-200 border-l-4 border-l-red-500' 
@@ -89,6 +97,11 @@ function MessageRecu({ messages, onRefresh, loading }: MessageRecuProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                     </svg>
                     <span className="font-semibold">{message.numero}</span>
+                    {message.index && (
+                      <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
+                        #{message.index}
+                      </span>
+                    )}
                   </div>
                   <div className="text-gray-500 flex items-center gap-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -116,6 +129,11 @@ function MessageRecu({ messages, onRefresh, loading }: MessageRecuProps) {
                     <span className="text-xs bg-gray-100 px-2 py-1 rounded">
                       {formatDate(message.date)}
                     </span>
+                    {message.status && (
+                      <span className="text-xs text-gray-400">
+                        ({message.status})
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="text-gray-700 leading-relaxed bg-white p-4 rounded-md border border-gray-100 shadow-sm">
@@ -123,7 +141,7 @@ function MessageRecu({ messages, onRefresh, loading }: MessageRecuProps) {
                     <svg className="w-5 h-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                     </svg>
-                    <span className="flex-1">{message.texte}</span>
+                    <span className="flex-1">{message.texte || "Message vide"}</span>
                   </div>
                 </div>
               </div>
@@ -140,7 +158,7 @@ function MessageRecuWrapper() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const ESP32_IP = "192.168.146.44"; // Replace with your ESP32 IP
+  const ESP32_IP = "192.168.146.87"; 
   
   const fetchReceivedMessages = async () => {
     try {
@@ -161,9 +179,19 @@ function MessageRecuWrapper() {
       const data = await response.json();
       
       if (data.success) {
-        setMessages(data.messages || []);
+        // Process messages to ensure proper type field
+        const processedMessages = (data.messages || []).map((msg: any) => ({
+          index: msg.index,
+          numero: msg.numero || msg.phone || 'Numéro inconnu',
+          texte: msg.texte || msg.text || msg.message || '',
+          date: msg.date || new Date().toLocaleString(),
+          status: msg.status,
+          type: msg.type || (msg.status?.includes('UNREAD') ? 'unread' : 'read')
+        }));
+        
+        setMessages(processedMessages);
       } else {
-        throw new Error('Failed to fetch messages from ESP32');
+        throw new Error(data.error || 'Failed to fetch messages from ESP32');
       }
     } catch (err) {
       console.error('Error fetching received messages:', err);
@@ -176,22 +204,7 @@ function MessageRecuWrapper() {
   };
 
   const refreshMessages = async () => {
-    try {
-      // Trigger manual refresh on ESP32
-      await fetch(`http://${ESP32_IP}/refresh-messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      // Then fetch the updated messages
-      await fetchReceivedMessages();
-    } catch (err) {
-      console.error('Error refreshing messages:', err);
-      // Still try to fetch even if refresh failed
-      await fetchReceivedMessages();
-    }
+    await fetchReceivedMessages();
   };
 
   useEffect(() => {
@@ -221,6 +234,9 @@ function MessageRecuWrapper() {
               </button>
               <p className="text-sm text-gray-500 mt-4">
                 Assurez-vous que l'ESP32 est connecté et accessible à l'adresse: {ESP32_IP}
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                Endpoints disponibles: /messages-received, /status, /gsm-status
               </p>
             </div>
           </div>

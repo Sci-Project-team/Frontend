@@ -68,14 +68,14 @@ function EnvoyerMessage() {
       const formattedPhone = formatPhoneNumber(trimmedNumero);
           
       // Send request to backend API
-      const response = await fetch('http://192.168.146.44/send-sms', {
+      const response = await fetch('http://192.168.146.87/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           phone: formattedPhone,
-          text: trimmedMessage
+          message: trimmedMessage
         })
       });
 
@@ -99,7 +99,6 @@ function EnvoyerMessage() {
 	      else message = String(error)
         console.error("Error:", error);
       
-      // More specific error messages
       if (message.includes('fetch')) {
         setErreur("Impossible de se connecter au serveur. Vérifiez l'adresse IP et que le serveur ESP32 est démarré.");
       } else if (message.includes('CORS')) {

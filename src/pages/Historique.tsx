@@ -120,7 +120,7 @@ function HistoriqueWrapper() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const ESP32_IP = "192.168.146.44"; // Replace with your ESP32 IP
+  const ESP32_IP = "192.168.146.87"; 
   
   // Parse the plain text SMS logs from ESP32
   const parseSMSLogs = (logText: string): Message[] => {
