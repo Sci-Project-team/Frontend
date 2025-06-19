@@ -36,7 +36,7 @@ function EnvoyerMessage() {
     try {
      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJuaW5hIiwiZXhwIjoxNzQ5NjY3NDkxfQ.K_4XBMYBv_LVS4g7nMQYhV7QLLwpTeHEjdnFINPGyuE";
 
-const response = await fetch("http://localhost:8000/sms", {
+const response = await fetch("192.168.120.237/sms", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
