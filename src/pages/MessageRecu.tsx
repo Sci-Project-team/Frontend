@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 type Message = {
   numero: string;
@@ -61,13 +62,14 @@ function MessageRecuWrapper() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { token } = useAuth();
 
   useEffect(() => {
     async function fetchMessages() {
       try {
-        const response = await fetch("http://localhost:8000/sms/inbox?limit=50", {
+        const response = await fetch("http://192.168.120.237:8000/sms/inbox?limit=50", {
           headers: {
-            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJuaW5hIiwiZXhwIjoxNzQ5NjY3NDkxfQ.K_4XBMYBv_LVS4g7nMQYhV7QLLwpTeHEjdnFINPGyuE`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -104,7 +106,7 @@ function MessageRecuWrapper() {
     }
 
     fetchMessages();
-  }, []);
+  }, [token]);
 
   if (loading) {
     return (

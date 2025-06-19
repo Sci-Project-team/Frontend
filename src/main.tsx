@@ -5,7 +5,12 @@ import Layout from "./Layout";
 import EnvoyerMessage from "./pages/EnvoyerMessage";
 import MessageRecuWrapper from "./pages/MessageRecu";
 import HistoriqueWrapper from "./pages/Historique";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
 import './index.css';
+
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
@@ -14,14 +19,23 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<EnvoyerMessage />} />
-          <Route path="recu" element={<MessageRecuWrapper />} />
-          <Route path="historique" element={<HistoriqueWrapper />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<EnvoyerMessage />} />
+              <Route path="recu" element={<MessageRecuWrapper />} />
+              <Route path="historique" element={<HistoriqueWrapper />} />
+            </Route>
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   </React.StrictMode>
 );

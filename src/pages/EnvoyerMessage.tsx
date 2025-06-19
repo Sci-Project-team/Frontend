@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 function EnvoyerMessage() {
   const [numero, setNumero] = useState("");
   const [message, setMessage] = useState("");
   const [erreur, setErreur] = useState("");
   const [success, setSuccess] = useState("");
+  const { token } = useAuth();
 
   const handleEnvoyer = async () => {
     const trimmedNumero = numero.trim();
@@ -34,19 +36,17 @@ function EnvoyerMessage() {
     }
 
     try {
-     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJuaW5hIiwiZXhwIjoxNzQ5NjY3NDkxfQ.K_4XBMYBv_LVS4g7nMQYhV7QLLwpTeHEjdnFINPGyuE";
-
-const response = await fetch("192.168.120.237/sms", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`, 
-  },
-  body: JSON.stringify({
-    phone_number: "+213" + trimmedNumero.slice(1),
-    message: trimmedMessage,
-  }),
-});
+      const response = await fetch("http://192.168.120.237:8000/sms", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          phone_number: "+213" + trimmedNumero.slice(1),
+          message: trimmedMessage,
+        }),
+      });
 
       if (!response.ok) {
         const error = await response.json();
