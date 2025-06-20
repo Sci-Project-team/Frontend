@@ -5,6 +5,7 @@ import Layout from "./Layout";
 import EnvoyerMessage from "./pages/EnvoyerMessage";
 import MessageRecuWrapper from "./pages/MessageRecu";
 import HistoriqueWrapper from "./pages/Historique";
+import LogsWrapper from "./pages/Logs";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -32,6 +33,7 @@ ReactDOM.createRoot(rootElement).render(
               <Route index element={<EnvoyerMessage />} />
               <Route path="recu" element={<MessageRecuWrapper />} />
               <Route path="historique" element={<HistoriqueWrapper />} />
+              <Route path="logs" element={<LogsWrapper />} />
             </Route>
           </Route>
         </Routes>
