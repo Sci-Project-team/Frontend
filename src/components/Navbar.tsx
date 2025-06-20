@@ -32,6 +32,12 @@ export default function Navbar() {
         >
           Historique
         </Link>
+        <Link 
+          to="/logs" 
+          className={`text-white hover:text-blue-100 ${location.pathname === '/logs' ? 'text-green-400 font-bold' : ''}`}
+        >
+          Logs
+        </Link>
         <button
           onClick={handleLogout}
           className="text-white hover:text-red-300 ml-auto"
