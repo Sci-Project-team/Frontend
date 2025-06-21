@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 function Register() {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -13,7 +15,7 @@ function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username.trim() || !password.trim() || !confirmPassword.trim()) {
+    if (!username.trim() || !email.trim() || !fullName.trim() || !password.trim() || !confirmPassword.trim()) {
       setError('Tous les champs sont requis');
       return;
     }
@@ -22,28 +24,40 @@ function Register() {
       setError('Les mots de passe ne correspondent pas');
       return;
     }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Veuillez entrer une adresse email valide');
+      return;
+    }
     
     setError('');
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://192.168.120.237:8000/auth/register', {
+      const response = await fetch('http://localhost:8080/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           username,
+          email,
+          full_name: fullName,
           password,
         }),
       });
       
       if (!response.ok) {
         const errorData = await response.json();
+        if (errorData.detail && Array.isArray(errorData.detail)) {
+          throw new Error(errorData.detail[0]?.msg || 'Erreur lors de l\'inscription');
+        }
         throw new Error(errorData.detail || 'Erreur lors de l\'inscription');
       }
       
-      // Registration successful, redirect to login page
+      // Registration successful, navigate to login page
       navigate('/login', { state: { message: 'Inscription réussie. Veuillez vous connecter.' } });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
@@ -68,6 +82,32 @@ function Register() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+              required
+            />
+          </div>
+          
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-semibold mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+              required
+            />
+          </div>
+          
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-semibold mb-2">
+              Nom complet
+            </label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
               required
             />
