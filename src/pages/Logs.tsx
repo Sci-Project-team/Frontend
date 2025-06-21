@@ -70,7 +70,7 @@ export default function LogsWrapper() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch("http://localhost:8080/logs", {
+        const response = await fetch("http://192.168.120.237:8000/logs", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
