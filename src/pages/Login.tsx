@@ -30,17 +30,25 @@ function Login() {
       formData.append("username", username);
       formData.append("password", password);
 
-      const response = await axios.post(`/auth/login`, formData, {
+      const response = await fetch(`/auth/login`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
+        body: formData,
       });
 
-      login(response.data.access_token);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Identifiants invalides");
+      }
+
+      const data = await response.json();
+      login(data.access_token);
 
       // Navigate to token display page with the token
       navigate("/token-display", {
-        state: { token: response.data.access_token },
+        state: { token: data.access_token },
         replace: true,
       });
     } catch (error) {
