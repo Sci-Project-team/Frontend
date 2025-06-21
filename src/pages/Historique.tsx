@@ -69,7 +69,7 @@ export default function HistoriqueWrapper() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch("http://192.168.120.237:8000/sms/sent", {
+        const response = await fetch("http://localhost:8080/sms/sent", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
