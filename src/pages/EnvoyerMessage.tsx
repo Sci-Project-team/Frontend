@@ -36,7 +36,7 @@ function EnvoyerMessage() {
     }
 
     try {
-      const response = await fetch("http://192.168.120.237:8000/sms", {
+      const response = await fetch("http://localhost:8080/sms", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
