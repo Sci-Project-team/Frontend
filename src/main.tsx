@@ -10,7 +10,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
-import './index.css';
+import "./index.css";
+import TokenDisplay from "./pages/TokenDisplay";
 
 const rootElement = document.getElementById("root");
 
@@ -26,8 +27,9 @@ ReactDOM.createRoot(rootElement).render(
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
+
           {/* Protected routes */}
+          <Route path="/token-display" element={<TokenDisplay />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Layout />}>
               <Route index element={<EnvoyerMessage />} />
