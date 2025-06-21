@@ -30,15 +30,11 @@ function Login() {
       formData.append("username", username);
       formData.append("password", password);
 
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/auth/login`, 
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
+      const response = await axios.post(`/auth/login`, formData, {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
 
       login(response.data.access_token);
 

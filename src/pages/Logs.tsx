@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
 
 type LogEntry = {
   timestamp: string;
@@ -71,18 +70,24 @@ export default function LogsWrapper() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+        const response = await fetch("http://192.168.120.237:8000/logs", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
         // Debug: Let's see what we're getting
-        console.log("Logs API Response:", response.data);
+        console.log("Logs API Response:", data);
 
         // Transform the API response into our LogEntry format
-        // With axios, the parsed JSON is directly available in response.data
-        const formatted: LogEntry[] = response.data.map((log: any) => ({
+        // Assuming the API returns an array of log objects with timestamp, level, and message properties
+        const formatted: LogEntry[] = data.map((log: any) => ({
           timestamp: new Date(log.timestamp).toLocaleString('fr-FR', {
             day: '2-digit',
             month: '2-digit',
@@ -99,12 +104,7 @@ export default function LogsWrapper() {
         setLogs(formatted);
       } catch (error) {
         console.error("Erreur lors de la récupération des logs :", error);
-        // Axios errors have response property
-        if (axios.isAxiosError(error) && error.response) {
-          setError(`Erreur HTTP: ${error.response.status}`);
-        } else {
-          setError(error instanceof Error ? error.message : "Erreur inconnue");
-        }
+        setError(error instanceof Error ? error.message : "Erreur inconnue");
       } finally {
         setLoading(false);
       }
