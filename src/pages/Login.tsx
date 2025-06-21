@@ -11,7 +11,7 @@ function Login() {
 
   const navigate = useNavigate();
   const { login } = useAuth();
-
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -30,8 +30,9 @@ function Login() {
       formData.append("username", username);
       formData.append("password", password);
 
-      const response = await fetch("http://localhost:8080/auth/login", {
-        method: "POST",
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+  method: "POST",
+ 
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },

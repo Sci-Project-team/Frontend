@@ -70,8 +70,9 @@ export default function LogsWrapper() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch("http://192.168.120.237:8000/logs", {
-          headers: {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+ 
+  headers: {
             Authorization: `Bearer ${token}`,
           },
         });

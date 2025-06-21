@@ -67,7 +67,7 @@ function MessageRecuWrapper() {
   useEffect(() => {
     async function fetchMessages() {
       try {
-        const response = await fetch("http://localhost:8080/sms/inbox?limit=50", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/sms/inbox?limit=50`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
