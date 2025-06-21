@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import axios from "axios";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -23,37 +24,35 @@ function Login() {
     setError("");
     setIsLoading(true);
 
-    // Replace the try block in your handleSubmit function with this:
     try {
-      // Format the request body as required by your API
+      // With axios, we can pass URLSearchParams directly as the data
       const formData = new URLSearchParams();
       formData.append("username", username);
       formData.append("password", password);
 
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
-  method: "POST",
- 
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: formData.toString(),
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/auth/login`, 
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Identifiants invalides");
-      }
-
-      const data = await response.json();
-      login(data.access_token);
+      login(response.data.access_token);
 
       // Navigate to token display page with the token
       navigate("/token-display", {
-        state: { token: data.access_token },
+        state: { token: response.data.access_token },
         replace: true,
       });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue");
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        setError(error.response.data.detail || "Identifiants invalides");
+      } else {
+        setError(error instanceof Error ? error.message : "Une erreur est survenue");
+      }
     } finally {
       setIsLoading(false);
     }
