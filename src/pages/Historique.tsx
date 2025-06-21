@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
 
 type Message = {
   numero: string;
@@ -70,19 +69,25 @@ export default function HistoriqueWrapper() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+        const response = await fetch("http://192.168.120.237:8000/sms/sent", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        
-        // Debug: Let's see what we're getting
-        console.log("Sent messages API Response:", response.data);
-        if (response.data.length > 0) {
-          console.log("First sent message structure:", response.data[0]);
+
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
         }
 
-        const formatted: Message[] = response.data.map((sms: any) => ({
+        const data = await response.json();
+        
+        // Debug: Let's see what we're getting
+        console.log("Sent messages API Response:", data);
+        if (data.length > 0) {
+          console.log("First sent message structure:", data[0]);
+        }
+
+        const formatted: Message[] = data.map((sms: any) => ({
           numero: sms.phone_number,
           texte: sms.message,
           date: new Date(sms.created_at).toLocaleString('fr-FR', {
@@ -97,11 +102,7 @@ export default function HistoriqueWrapper() {
         setMessages(formatted);
       } catch (error) {
         console.error("Erreur lors de la récupération des logs :", error);
-        if (axios.isAxiosError(error) && error.response) {
-          setError(`Erreur HTTP: ${error.response.status}`);
-        } else {
-          setError(error instanceof Error ? error.message : "Erreur inconnue");
-        }
+        setError(error instanceof Error ? error.message : "Erreur inconnue");
       } finally {
         setLoading(false);
       }

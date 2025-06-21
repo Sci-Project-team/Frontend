@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -24,18 +23,19 @@ function Login() {
     setError("");
     setIsLoading(true);
 
+    // Replace the try block in your handleSubmit function with this:
     try {
-      // With axios, we can pass URLSearchParams directly as the data
+      // Format the request body as required by your API
       const formData = new URLSearchParams();
       formData.append("username", username);
       formData.append("password", password);
 
-      const response = await fetch(`/auth/login`, {
+      const response = await fetch("http://localhost:8080/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: formData,
+        body: formData.toString(),
       });
 
       if (!response.ok) {
@@ -51,12 +51,8 @@ function Login() {
         state: { token: data.access_token },
         replace: true,
       });
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.data) {
-        setError(error.response.data.detail || "Identifiants invalides");
-      } else {
-        setError(error instanceof Error ? error.message : "Une erreur est survenue");
-      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
       setIsLoading(false);
     }

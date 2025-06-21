@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
 
 type Message = {
   numero: string;
@@ -68,19 +67,25 @@ function MessageRecuWrapper() {
   useEffect(() => {
     async function fetchMessages() {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/sms/inbox?limit=50`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/sms/inbox?limit=50`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+
+        const data = await response.json();
         
-        console.log("API Response:", response.data);
-        if (response.data.length > 0) {
-          console.log("First message structure:", response.data[0]);
+        console.log("API Response:", data);
+        if (data.length > 0) {
+          console.log("First message structure:", data[0]);
         }
 
         setMessages(
-          response.data.map((sms: any) => ({
+          data.map((sms: any) => ({
             numero: sms.phone_number,
             texte: sms.message,
             date: new Date(sms.created_at).toLocaleString('fr-FR', {
@@ -92,13 +97,9 @@ function MessageRecuWrapper() {
             }),
           }))
         );
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-        if (axios.isAxiosError(error) && error.response) {
-          setError(`Erreur HTTP: ${error.response.status}`);
-        } else {
-          setError(error instanceof Error ? error.message : "Erreur inconnue");
-        }
+      } catch (err: any) {
+        console.error("Error fetching messages:", err);
+        setError(err.message || "Erreur inconnue");
       } finally {
         setLoading(false);
       }

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 function Register() {
   const [username, setUsername] = useState('');
@@ -37,34 +36,31 @@ function Register() {
     setIsLoading(true);
     
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/auth/login`,
-        {
+      const response = await fetch('http://localhost:8080/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           username,
           email,
           full_name: fullName,
           password,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.detail && Array.isArray(errorData.detail)) {
+          throw new Error(errorData.detail[0]?.msg || 'Erreur lors de l\'inscription');
         }
-      );
+        throw new Error(errorData.detail || 'Erreur lors de l\'inscription');
+      }
       
       // Registration successful, navigate to login page
       navigate('/login', { state: { message: 'Inscription réussie. Veuillez vous connecter.' } });
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.data) {
-        const errorData = error.response.data;
-        if (errorData.detail && Array.isArray(errorData.detail)) {
-          setError(errorData.detail[0]?.msg || 'Erreur lors de l\'inscription');
-        } else {
-          setError(errorData.detail || 'Erreur lors de l\'inscription');
-        }
-      } else {
-        setError(error instanceof Error ? error.message : 'Une erreur est survenue');
-      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
       setIsLoading(false);
     }

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
 
 function EnvoyerMessage() {
   const [numero, setNumero] = useState("");
@@ -37,31 +36,32 @@ function EnvoyerMessage() {
     }
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/sms`,
-        {
+      const response = await fetch("http://192.168.120.237:8000/sms", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
           phone_number: "+213" + trimmedNumero.slice(1),
           message: trimmedMessage,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        }
-      );
+        }),
+      });
 
-      console.log("Réponse API:", response.data);
+      if (!response.ok) {
+        const error = await response.json();
+        setErreur(error.detail || "Une erreur s'est produite lors de l'envoi.");
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Réponse API:", data);
       setSuccess("Message envoyé avec succès !");
       setNumero("");
       setMessage("");
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        setErreur(error.response.data.detail || "Une erreur s'est produite lors de l'envoi.");
-      } else {
-        setErreur("Erreur réseau ou serveur.");
-        console.error(error);
-      }
+    } catch (err) {
+      setErreur("Erreur réseau ou serveur.");
+      console.error(err);
     }
   };
 
