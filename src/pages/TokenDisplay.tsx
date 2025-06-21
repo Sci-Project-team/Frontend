@@ -52,7 +52,7 @@ function TokenDisplay() {
   }
 
   return (
-    <div className="flex justify-center items-center p-6">
+    <div className="flex justify-center items-center p-6 h-screen">
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Token d'API</h2>
 
