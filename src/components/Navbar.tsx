@@ -20,12 +20,7 @@ export default function Navbar() {
         >
           Envoyer message
         </Link>
-        <Link 
-          to="/recu" 
-          className={`text-white hover:text-blue-100 ${location.pathname === '/recu' ? 'text-green-400 font-bold' : ''}`}
-        >
-          Messages reçus
-        </Link>
+        
         <Link 
           to="/historique" 
           className={`text-white hover:text-blue-100 ${location.pathname === '/historique' ? 'text-green-400 font-bold' : ''}`}
